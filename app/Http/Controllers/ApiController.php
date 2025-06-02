@@ -123,7 +123,7 @@ class ApiController extends Controller
         }
     }
 
-    public function btcToUsdRate(Request $request)
+    public function btcToUsdRate()
     {
         try
         {
@@ -175,7 +175,7 @@ class ApiController extends Controller
 
             return response()->json([
                 'status' => false,
-                'message' => "Something went wrong.",
+                'message' => "Something went wrong!!!",
                 'data' => array()
             ],500);
         }
