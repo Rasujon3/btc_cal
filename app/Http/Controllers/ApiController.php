@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
 use App\Models\Rate;
+use Illuminate\Support\Facades\Log;
 use Validator;
 
 class ApiController extends Controller
@@ -11,7 +13,7 @@ class ApiController extends Controller
     public function btcCalculation(Request $request)
     {
         try
-        {    
+        {
 
 
             $validator = Validator::make($request->all(), [
@@ -19,28 +21,28 @@ class ApiController extends Controller
             ]);
 
             if($validator->fails()){
-                return response()->json(['status'=>false, 'message'=>'The given data was invalid', 'data'=>$validator->errors()],422);  
+                return response()->json(['status'=>false, 'message'=>'The given data was invalid', 'data'=>$validator->errors()],422);
             }
 
             $btcAmount = $request->has('amount')?$request->amount:1;
             $url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
-            
+
             // Initialize cURL
             $ch = curl_init();
-            
+
             // Set cURL options
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            
+
             // Execute the request
             $response = curl_exec($ch);
-            
+
             // Close cURL
             curl_close($ch);
-            
+
             // Decode the JSON response
             $data = json_decode($response, true);
-            
+
             // Get the BTC to USD rate
             $rate = $data['bitcoin']['usd'] ?? 0;
             //return $rate;
@@ -63,7 +65,7 @@ class ApiController extends Controller
                                   ->where('rate', '>=', $totalUsd);
                             });
                         })
-                    
+
                     ->get();
 
             $nearest = null;
@@ -88,7 +90,7 @@ class ApiController extends Controller
                 'data' => $nearest,
             ]);
 
-            
+
 
             //return response()->json(['status'=>count($rates)>0, 'rate'=>$totalUsd, 'data'=>$rates]);
 
@@ -107,7 +109,7 @@ class ApiController extends Controller
             ]);
 
             if($validator->fails()){
-                return response()->json(['status'=>false, 'message'=>'The given data was invalid', 'data'=>$validator->errors()],422);  
+                return response()->json(['status'=>false, 'message'=>'The given data was invalid', 'data'=>$validator->errors()],422);
             }
 
             $rate = Rate::findorfail($request->rate_id);
@@ -118,6 +120,64 @@ class ApiController extends Controller
 
         }catch(Exception $e){
             return response()->json(['status'=>false, 'code'=>$e->getCode(), 'message'=>$e->getMessage()],500);
+        }
+    }
+
+    public function btcToUsdRate(Request $request)
+    {
+        try
+        {
+            $url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
+
+            // Initialize cURL
+            $ch = curl_init();
+
+            // Set cURL options
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            // Execute the request
+            $response = curl_exec($ch);
+
+            // Close cURL
+            curl_close($ch);
+
+            // Decode the JSON response
+            $data = json_decode($response, true);
+
+            // Get the BTC to USD rate
+            $rate = $data['bitcoin']['usd'] ?? 0;
+
+            if($rate === 0)
+            {
+                return response()->json([
+                    'status' => false,
+                    'rate' => 0,
+                    'message' => "API Service Unavailable.",
+                    'data' => array()
+                ],500);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => "BTC USD value calculated successfully.",
+                'data' => $rate,
+            ]);
+
+        } catch(Exception $e){
+            // Log the error
+            Log::error('Error in getting BTC to USD rate: ', [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => "Something went wrong.",
+                'data' => array()
+            ],500);
         }
     }
 }

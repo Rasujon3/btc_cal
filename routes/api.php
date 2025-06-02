@@ -23,4 +23,5 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::apiResource('rates', RateController::class);
     Route::post('btc-calculation', [ApiController::class, 'btcCalculation']);
     Route::post('set-alerm-status', [ApiController::class, 'setAlermStatus']);
+    Route::get('btc-to-usd-rate', [ApiController::class, 'btcToUsdRate']);
 });
