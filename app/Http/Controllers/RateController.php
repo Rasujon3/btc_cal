@@ -56,7 +56,7 @@ class RateController extends Controller
             ]);
 
             if($validator->fails()){
-                return response()->json(['status'=>false, 'message'=>'The given data was invalid', 'data'=>$validator->errors()],422);  
+                return response()->json(['status'=>false, 'message'=>'The given data was invalid', 'data'=>$validator->errors()],422);
             }
 
             $checkRate = Rate::where('device_token',$request->device_token)->where('rate',$request->rate)->first();
@@ -71,7 +71,7 @@ class RateController extends Controller
             $rate->rate = $request->rate;
             $rate->type = $request->type;
             $rate->save();
-            return response()->json(['status'=>true, 'rate_id'=>intval($rate->id), 'message'=>'Successfully a rate has been added']);            
+            return response()->json(['status'=>true, 'rate_id'=>intval($rate->id), 'message'=>'Successfully a rate has been added']);
         }catch(Exception $e){
             return response()->json(['status'=>false, 'code'=>$e->getCode(), 'message'=>$e->getMessage()],500);
         }
@@ -116,7 +116,7 @@ class RateController extends Controller
             ]);
 
             if($validator->fails()){
-                return response()->json(['status'=>false, 'message'=>'The given data was invalid', 'data'=>$validator->errors()],422);  
+                return response()->json(['status'=>false, 'message'=>'The given data was invalid', 'data'=>$validator->errors()],422);
             }
 
             $checkRate = Rate::where('id','!=',$rate->id)->where('device_token',$request->device_token)->where('rate',$request->rate)->first();
@@ -129,7 +129,7 @@ class RateController extends Controller
             $rate->rate = $request->rate;
             $rate->type = $request->type;
             $rate->update();
-            return response()->json(['status'=>true, 'rate_id'=>intval($rate->id), 'message'=>'Successfully a rate has been added']);            
+            return response()->json(['status'=>true, 'rate_id'=>intval($rate->id), 'message'=>'Successfully a rate has been added']);
         }catch(Exception $e){
             return response()->json(['status'=>false, 'code'=>$e->getCode(), 'message'=>$e->getMessage()],500);
         }
@@ -149,6 +149,41 @@ class RateController extends Controller
             return response()->json(['status'=>true, 'message'=>'Successfully the rate has been deleted']);
         }catch(Exception $e){
             return response()->json(['status'=>false, 'code'=>$e->getCode(), 'message'=>$e->getMessage()],500);
+        }
+    }
+
+    public function deleteAll(Request $request)
+    {
+        try
+        {
+            $validator = Validator::make($request->all(), [
+                'device_token' => [
+                    'required',
+                    'string',
+                    'exists:rates,device_token',
+                ],
+            ]);
+
+            if($validator->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'The given data was invalid',
+                    'data' => $validator->errors()
+                ],422);
+            }
+
+            Rate::where('device_token', $request->device_token)->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'All rate entries deleted successfully.',
+            ]);
+        } catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'code' => $e->getCode(),
+                'message' => $e->getMessage()
+            ],500);
         }
     }
 }
