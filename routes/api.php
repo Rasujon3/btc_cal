@@ -22,7 +22,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware('throttle:60,1')->group(function () {
     Route::apiResource('rates', RateController::class);
     Route::post('rates/delete-all', [RateController::class, 'deleteAll']);
-    Route::post('btc-calculation', [ApiController::class, 'btcCalculation']);
+    Route::post('btc-calculation', [ApiController::class, 'btcCalculationBK']);
     Route::post('set-alerm-status', [ApiController::class, 'setAlermStatus']);
-    Route::get('btc-to-usd-rate', [ApiController::class, 'btcToUsdRate']);
+    Route::get('btc-to-usd-rate', [ApiController::class, 'btcToUsdRateBK']);
+
+    Route::post('btc-calculation-bk', [ApiController::class, 'btcCalculation']);
+    Route::get('btc-to-usd-rate-bk', [ApiController::class, 'btcToUsdRate']);
 });
