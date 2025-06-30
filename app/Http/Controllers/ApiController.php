@@ -44,7 +44,7 @@ class ApiController extends Controller
             $data = json_decode($response, true);
 
             // Get the BTC to USD rate
-            $rate = $data['price'] ?? 0;
+            $rate = isset($data['price']) ? $data['price'] : 0;
             //return $rate;
             if($rate == 0)
             {
@@ -227,15 +227,26 @@ class ApiController extends Controller
 
             // Execute the request
             $response = curl_exec($ch);
+            if(curl_errno($ch)) {
+                $response = curl_exec($ch);
+            }
 
             // Close cURL
             curl_close($ch);
 
             // Decode the JSON response
             $data = json_decode($response, true);
+            if (!$data) {
+                return response()->json([
+                    'status' => false,
+                    'rate' => 0,
+                    'message' => "API Service Unavailable.",
+                    'data' => []
+                ],500);
+            }
 
             // Get the BTC to USD rate
-            $rate = $data['price'] ? (float) $data['price'] : 0;
+            $rate = isset($data['price']) ? (float) $data['price'] : 0;
 
             if($rate === 0)
             {
@@ -265,7 +276,7 @@ class ApiController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => "Something went wrong!!!",
-                'data' => array()
+                'data' => []
             ],500);
         }
     }
